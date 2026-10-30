@@ -17,7 +17,7 @@ FirstCell  SecondCell
 Run Pandoc with the filter:
 
 ```sh
-pandoc input.md --lua-filter=pandoc_table_attr.lua -o output.html
+pandoc --lua-filter=pandoc-table-attr.lua input.md -o output.html
 ```
 
 The filter removes `{#id .class key=value}` from the caption and assigns the parsed identifier, classes, and key-value attributes to the table. The attributes can then be used by Pandoc writers.
@@ -26,6 +26,5 @@ Attributes must appear at the end of the caption. Identifiers, classes, and key-
 
 ## Limitations
 
-- The filter currently handles captions represented by a single `Plain` or `Para` block.
-- The caption is stringified and reparsed as Markdown after removing the attribute list. This preserves ordinary Markdown formatting, but may not preserve every unusual inline AST structure exactly.
-- As with Pandoc's Markdown parser, formatting syntax inside an attribute value may be interpreted as inline formatting before the filter sees it. Escape such characters where necessary.
+- The filter handles the final `Plain` or `Para` block in a caption.
+- Attribute syntax must be parsed from Pandoc's inline representation. As with Pandoc's Markdown parser, formatting syntax inside an attribute value may be interpreted as inline formatting before the filter sees it. Escape such characters where necessary.
