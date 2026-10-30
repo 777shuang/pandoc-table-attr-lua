@@ -1,30 +1,31 @@
-# pandoc-table-attr
+# pandoc-table-attr-lua
 
-A [pandoc](https://pandoc.org/index.html) [filter](https://pandoc.org/filters.html) that adds the capability of specifying [table attributes](https://hackage.haskell.org/package/pandoc-types-1.22.2.1/docs/Text-Pandoc-Definition.html#t:Attr) in [table captions](https://pandoc.org/MANUAL.html#tables) in [Pandoc's Markdown](https://pandoc.org/MANUAL.html#pandocs-markdown).
+A [Pandoc](https://pandoc.org/) Lua filter that allows table attributes to be specified at the end of a table caption in Pandoc Markdown.
 
+## Usage
 
-## How to use
+Given this Markdown:
 
-Simply append attributes to table captions like so:
-```
-Table: Table caption. {#id .class key=val}
+```markdown
+Table: Table caption. {#id .class key=value}
 
 FirstCol   SecondCol
 ---------  ----------
 FirstCell  SecondCell
 ```
-The attributes specified in the table caption will then be added to pandoc's AST and used by pandoc's writers (the HTML writer utilises table attributes, but I haven't tested this with any of the other writers yet).
 
-Table attributes must appear at the end of the table caption.
+Run Pandoc with the filter:
 
+```sh
+pandoc input.md --lua-filter=pandoc_table_attr.lua -o output.html
+```
 
-## Known limitations
+The filter removes `{#id .class key=value}` from the caption and assigns the parsed identifier, classes, and key-value attributes to the table. The attributes can then be used by Pandoc writers.
 
-The current implementation of pandoc-table-attr does not allow inline elements to be used in keyvalues if they would be parsed by pandoc as [inline formatting](https://pandoc.org/MANUAL.html#inline-formatting), [inline math](https://pandoc.org/MANUAL.html#math), [inline code blocks](https://pandoc.org/MANUAL.html#fenced-code-blocks) (Extension: `backtick_code_blocks`), [generic raw attributes](https://pandoc.org/MANUAL.html#generic-raw-attribute), [inline links](https://pandoc.org/MANUAL.html#inline-links), or [citations](https://pandoc.org/MANUAL.html#citation-syntax). Therefore, the following will not work:
-```
-Table: Table caption. {#id .class key="*val*"}
-```
-Pandoc will parse `*val*` as *emphasized text*, instead of literal asterisks. However, it is possible to use [backslash escapes](https://pandoc.org/MANUAL.html#backslash-escapes) as a workaround:
-```
-Table: Table caption. {#id .class key="\*val\*"}
-```
+Attributes must appear at the end of the caption. Identifiers, classes, and key-value pairs follow Pandoc's usual attribute syntax; quoted values may contain spaces.
+
+## Limitations
+
+- The filter currently handles captions represented by a single `Plain` or `Para` block.
+- The caption is stringified and reparsed as Markdown after removing the attribute list. This preserves ordinary Markdown formatting, but may not preserve every unusual inline AST structure exactly.
+- As with Pandoc's Markdown parser, formatting syntax inside an attribute value may be interpreted as inline formatting before the filter sees it. Escape such characters where necessary.
